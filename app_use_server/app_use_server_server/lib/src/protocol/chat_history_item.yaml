@@ -1,0 +1,4 @@
+class: ChatHistoryItem
+fields:
+  role: String
+  text: String

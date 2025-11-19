@@ -1,0 +1,4 @@
+class: ToolResultItem
+fields:
+  name: String
+  response: String

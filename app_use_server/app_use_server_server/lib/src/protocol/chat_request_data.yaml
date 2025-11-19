@@ -1,0 +1,6 @@
+class: ChatRequestData
+fields:
+  message: String
+  currentCounterValue: int
+  history: List<ChatHistoryItem>?
+  toolResults: List<ToolResultItem>?

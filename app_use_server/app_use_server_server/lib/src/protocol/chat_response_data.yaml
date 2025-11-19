@@ -1,0 +1,3 @@
+class: ChatResponseData
+fields:
+  responses: List<ChatResponseItem>

@@ -1,0 +1,7 @@
+class: ChatResponseItem
+fields:
+  type: String
+  content: String?
+  toolName: String?
+  args: String?
+  callId: String?
