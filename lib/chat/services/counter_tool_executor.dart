@@ -96,27 +96,33 @@ class CounterToolExecutor implements ToolExecutor {
   /// Increment the counter by 1
   ToolExecutionResult _incrementCounter() {
     _counterCubit.increment();
+    final newValue = _counterCubit.state.value;
     return ToolExecutionResult.success(
-      message: 'Counter incremented by 1',
+      message: 'Counter incremented. New value: $newValue',
       action: 'incremented',
+      value: newValue,
     );
   }
 
   /// Decrement the counter by 1
   ToolExecutionResult _decrementCounter() {
     _counterCubit.decrement();
+    final newValue = _counterCubit.state.value;
     return ToolExecutionResult.success(
-      message: 'Counter decremented by 1',
+      message: 'Counter decremented. New value: $newValue',
       action: 'decremented',
+      value: newValue,
     );
   }
 
   /// Reset the counter to 0
   ToolExecutionResult _resetCounter() {
     _counterCubit.reset();
+    final newValue = _counterCubit.state.value;
     return ToolExecutionResult.success(
-      message: 'Counter reset to 0',
+      message: 'Counter reset. New value: $newValue',
       action: 'reset',
+      value: newValue,
     );
   }
 

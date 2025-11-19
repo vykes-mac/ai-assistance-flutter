@@ -67,7 +67,10 @@ class GeminiService {
     // Build system instruction with current counter value
     final systemInstruction = Content.system(
       'You are a helpful assistant that can control a counter in a Flutter app. '
-      'The current counter value is $currentCounterValue. '
+      'The counter uses 0-based counting, where 0 is the initial value. '
+      'The current counter value is exactly $currentCounterValue. '
+      'When you call a counter function, the tool response will include "New value: X". '
+      'ALWAYS use the exact value from the tool response when reporting the counter value - do not calculate it yourself. '
       'Use the available functions to help users manipulate the counter. '
       'If the user asks for information that can be retrieved using a tool (like history), '
       'call the tool immediately without asking for permission. '
