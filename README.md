@@ -122,79 +122,88 @@ The AI assistant has access to these counter operations:
 
 ```
 app_use/
+├── lib/                                    # Flutter App
+│   ├── main.dart                          # App entry point
+│   ├── app.dart                           # Root app widget
+│   ├── core/                              # Core utilities
+│   │   ├── constants/
+│   │   └── theme/
+│   ├── counter/                           # Counter feature
+│   │   ├── cubit/
+│   │   │   ├── counter_cubit.dart        # Counter state management
+│   │   │   └── counter_state.dart
+│   │   ├── models/
+│   │   │   └── counter_operation.dart    # Operation history model
+│   │   ├── widgets/
+│   │   │   ├── counter_display.dart
+│   │   │   └── counter_actions.dart
+│   │   └── view/
+│   │       └── counter_page.dart         # Counter UI
+│   └── chat/                              # Chat feature
+│       ├── cubit/
+│       │   ├── chat_cubit.dart           # Chat state management
+│       │   └── chat_state.dart
+│       ├── models/
+│       │   ├── chat_message_model.dart
+│       │   └── tool_execution_result.dart
+│       ├── repositories/
+│       │   ├── chat_repository.dart      # Abstract repository
+│       │   └── chat_repository_impl.dart # Serverpod client wrapper
+│       ├── services/
+│       │   ├── tool_executor.dart        # Tool executor interface
+│       │   └── counter_tool_executor.dart # Counter tool implementation
+│       ├── widgets/
+│       │   ├── chat_message_list.dart
+│       │   ├── chat_input.dart
+│       │   └── tool_execution_indicator.dart
+│       └── view/
+│           └── chat_page.dart            # Chat UI
+│
+├── app_use_server/                        # Serverpod Backend
+│   ├── app_use_server_client/            # Generated client SDK
+│   │   └── lib/
+│   │       ├── app_use_server_client.dart
+│   │       └── src/
+│   │           └── protocol/             # Generated protocol classes
+│   └── app_use_server_server/            # Server implementation
+│       ├── bin/
+│       │   └── main.dart                 # Server entry point
+│       └── lib/
+│           ├── server.dart
+│           └── src/
+│               ├── endpoints/
+│               │   └── chat_endpoint.dart # Chat API endpoint
+│               ├── services/
+│               │   └── gemini_service.dart # Gemini integration
+│               └── protocol/             # Data models (YAML)
+│
+├── pubspec.yaml                           # Flutter dependencies
+└── README.md                              # This file
 ```
-
-lib/
-├── main.dart
-├── app.dart
-├── core/
-│ ├── constants/
-│ ├── theme/
-│ └── utils/
-├── counter/
-│ ├── cubit/
-│ │ ├── counter_cubit.dart
-│ │ └── counter_state.dart
-│ ├── models/
-│ │ └── counter_operation.dart
-│ ├── widgets/
-│ │ ├── counter_display.dart
-│ │ └── counter_actions.dart
-│ └── view/
-│ └── counter_page.dart
-└── chat/
-├── cubit/
-│ ├── chat_cubit.dart
-│ └── chat_state.dart
-├── models/
-│ ├── chat_message_model.dart
-│ └── tool_execution_result.dart
-├── repositories/
-│ ├── chat_repository.dart
-│ └── chat_repository_impl.dart
-├── services/
-│ ├── tool_executor.dart
-│ └── counter_tool_executor.dart
-├── widgets/
-│ ├── chat_message_list.dart
-│ ├── chat_input.dart
-│ └── tool_execution_indicator.dart
-└── view/
-└── chat_page.dart
-├── app_use_server/
-│ ├── app_use_server_client/ # Generated client SDK
-│ └── app_use_server_server/ # Backend server
-│ ├── lib/
-│ │ └── src/
-│ │ ├── endpoints/
-│ │ │ └── chat_endpoint.dart # Chat API endpoint
-│ │ ├── services/
-│ │ │ └── gemini_service.dart # Gemini integration
-│ │ └── protocol/ # Data models (YAML)
-│ └── bin/
-│ └── main.dart # Server entry point
-
-````
 
 ## Troubleshooting
 
 ### Server won't start
+
 - Ensure GEMINI_API_KEY is set: `echo $GEMINI_API_KEY`
 - Check if port 8080 is available
 - Check server logs for errors
 
 ### App can't connect to server
+
 - Verify server is running on `http://localhost:8080`
 - Check `lib/screens/chat_screen.dart` has correct server URL
 - For iOS simulator, use `http://localhost:8080`
 - For Android emulator, use `http://10.0.2.2:8080`
 
 ### AI not responding
+
 - Verify Gemini API key is valid
 - Check server logs for API errors
 - Ensure you have internet connection
 
 ### Counter not updating
+
 - Check that ToolHandler is properly initialized in main.dart
 - Verify tool execution feedback appears in chat
 - Check Flutter console for errors
@@ -202,6 +211,7 @@ lib/
 ## Rate Limiting
 
 The server implements rate limiting:
+
 - Maximum 20 requests per minute per client
 - Automatic cleanup of inactive rate limiters
 - Error message returned when limit exceeded
@@ -211,6 +221,7 @@ The server implements rate limiting:
 ### Adding New Tools
 
 1. **Define tool schema in `gemini_service.dart`**:
+
 ```dart
 FunctionDeclaration(
   name: 'your_tool_name',
@@ -222,7 +233,7 @@ FunctionDeclaration(
     },
   ),
 ),
-````
+```
 
 2. **Implement tool in `tool_handler.dart`**:
 
