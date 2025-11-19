@@ -8,7 +8,7 @@ class GeminiService {
 
   GeminiService({required this.apiKey});
 
-  /// Define tool schemas for counter actions
+  /// Define tool schemas for counter and navigation actions
   Tool _getCounterTools() {
     return Tool(functionDeclarations: [
       FunctionDeclaration(
@@ -54,6 +54,14 @@ class GeminiService {
           properties: {},
         ),
       ),
+      FunctionDeclaration(
+        'navigate_to_test_page',
+        'Navigates the user to the test page in the app',
+        Schema(
+          SchemaType.object,
+          properties: {},
+        ),
+      ),
     ]);
   }
 
@@ -66,12 +74,13 @@ class GeminiService {
   }) async* {
     // Build system instruction with current counter value
     final systemInstruction = Content.system(
-      'You are a helpful assistant that can control a counter in a Flutter app. '
+      'You are a helpful assistant that can control a counter and navigate in a Flutter app. '
       'The counter uses 0-based counting, where 0 is the initial value. '
       'The current counter value is exactly $currentCounterValue. '
       'When you call a counter function, the tool response will include "New value: X". '
       'ALWAYS use the exact value from the tool response when reporting the counter value - do not calculate it yourself. '
-      'Use the available functions to help users manipulate the counter. '
+      'You can also navigate users to the test page when they ask to go there or see it. '
+      'Use the available functions to help users manipulate the counter and navigate the app. '
       'If the user asks for information that can be retrieved using a tool (like history), '
       'call the tool immediately without asking for permission. '
       'Be conversational and friendly.',

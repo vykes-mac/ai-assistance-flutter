@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../chat/view/chat_page.dart';
 import '../../core/constants/app_constants.dart';
 import '../cubit/counter_cubit.dart';
 import '../cubit/counter_state.dart';
-import '../widgets/counter_actions.dart';
 import '../widgets/counter_display.dart';
 
-/// Main counter page that displays the counter and allows navigation to chat
+/// Main counter page that displays the counter
 class CounterPage extends StatelessWidget {
   const CounterPage({super.key});
 
@@ -20,9 +18,9 @@ class CounterPage extends StatelessWidget {
         title: const Text(AppConstants.counterPageTitle),
         actions: [
           IconButton(
-            icon: const Icon(Icons.chat),
-            onPressed: () => _openChat(context),
-            tooltip: AppConstants.chatTooltip,
+            icon: const Icon(Icons.science),
+            onPressed: () => Navigator.pushNamed(context, '/test'),
+            tooltip: 'Go to Test Page',
           ),
         ],
       ),
@@ -36,25 +34,48 @@ class CounterPage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 40),
-            CounterActions(
-              onChatPressed: () => _openChat(context),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => context.read<CounterCubit>().decrement(),
+                  icon: const Icon(Icons.remove),
+                  label: const Text('Decrement'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton.icon(
+                  onPressed: () => context.read<CounterCubit>().increment(),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Increment'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => context.read<CounterCubit>().reset(),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Reset'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.read<CounterCubit>().increment(),
-        tooltip: AppConstants.incrementTooltip,
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  void _openChat(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const ChatPage(),
       ),
     );
   }
