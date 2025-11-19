@@ -6,18 +6,17 @@ import 'tool_executor.dart';
 class CounterToolExecutor implements ToolExecutor {
   final CounterCubit _counterCubit;
 
-  CounterToolExecutor({
-    required CounterCubit counterCubit,
-  }) : _counterCubit = counterCubit;
+  CounterToolExecutor({required CounterCubit counterCubit})
+    : _counterCubit = counterCubit;
 
   @override
   List<String> get supportedTools => [
-        'increment_counter',
-        'decrement_counter',
-        'reset_counter',
-        'set_counter_value',
-        'get_counter_history',
-      ];
+    'increment_counter',
+    'decrement_counter',
+    'reset_counter',
+    'set_counter_value',
+    'get_counter_history',
+  ];
 
   @override
   ToolExecutionResult executeTool(String toolName, String? argsString) {
@@ -34,8 +33,27 @@ class CounterToolExecutor implements ToolExecutor {
         return _resetCounter();
 
       case 'set_counter_value':
-        final value = args['value'] as int? ?? 0;
-        return _setCounterValue(value);
+        if (!args.containsKey('value')) {
+          return ToolExecutionResult.error(
+            'No value provided for set_counter_value',
+          );
+        }
+        // Try to get the value and convert it properly
+        dynamic rawValue = args['value'];
+        int value;
+
+        if (rawValue is int) {
+          value = rawValue;
+        } else if (rawValue is double) {
+          value = rawValue.toInt();
+        } else if (rawValue is String) {
+          value = int.tryParse(rawValue) ?? 0;
+        } else {
+          value = 0;
+        }
+
+        final result = _setCounterValue(value);
+        return result;
 
       case 'get_counter_history':
         return _getCounterHistory();
@@ -56,13 +74,19 @@ class CounterToolExecutor implements ToolExecutor {
     final pairs = argsString.split(',');
 
     for (final pair in pairs) {
-      final parts = pair.split(':');
-      if (parts.length == 2) {
-        final key = parts[0].trim();
-        final value = parts[1].trim();
+      final colonIndex = pair.indexOf(':');
+      if (colonIndex != -1) {
+        final key = pair.substring(0, colonIndex).trim();
+        final value = pair.substring(colonIndex + 1).trim();
 
-        // Try to parse as int
-        args[key] = int.tryParse(value) ?? value;
+        // Try to parse as int, then double, otherwise keep as string
+        final intValue = int.tryParse(value);
+        if (intValue != null) {
+          args[key] = intValue;
+        } else {
+          final doubleValue = double.tryParse(value);
+          args[key] = doubleValue ?? value;
+        }
       }
     }
 
@@ -111,7 +135,7 @@ class CounterToolExecutor implements ToolExecutor {
     final history = _counterCubit.state.history
         .map((op) => op.toString())
         .toList();
-    
+
     return ToolExecutionResult.success(
       message: 'Retrieved ${history.length} history items',
       history: history,

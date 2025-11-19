@@ -14,10 +14,9 @@ class CounterCubit extends Cubit<CounterState> {
       action: 'Incremented by 1',
       timestamp: DateTime.now(),
     );
-    emit(state.copyWith(
-      value: newValue,
-      history: [...state.history, operation],
-    ));
+    emit(
+      state.copyWith(value: newValue, history: [...state.history, operation]),
+    );
   }
 
   /// Decrement the counter by 1
@@ -27,10 +26,9 @@ class CounterCubit extends Cubit<CounterState> {
       action: 'Decremented by 1',
       timestamp: DateTime.now(),
     );
-    emit(state.copyWith(
-      value: newValue,
-      history: [...state.history, operation],
-    ));
+    emit(
+      state.copyWith(value: newValue, history: [...state.history, operation]),
+    );
   }
 
   /// Reset the counter to 0
@@ -39,10 +37,7 @@ class CounterCubit extends Cubit<CounterState> {
       action: 'Reset to 0',
       timestamp: DateTime.now(),
     );
-    emit(state.copyWith(
-      value: 0,
-      history: [...state.history, operation],
-    ));
+    emit(state.copyWith(value: 0, history: [...state.history, operation]));
   }
 
   /// Set the counter to a specific value
@@ -52,10 +47,7 @@ class CounterCubit extends Cubit<CounterState> {
       timestamp: DateTime.now(),
       value: value,
     );
-    emit(state.copyWith(
-      value: value,
-      history: [...state.history, operation],
-    ));
+    emit(state.copyWith(value: value, history: [...state.history, operation]));
   }
 
   /// Add a custom operation to history without changing the value
@@ -64,9 +56,7 @@ class CounterCubit extends Cubit<CounterState> {
       action: action,
       timestamp: DateTime.now(),
     );
-    emit(state.copyWith(
-      history: [...state.history, operation],
-    ));
+    emit(state.copyWith(history: [...state.history, operation]));
   }
 
   /// Clear the operation history

@@ -21,12 +21,12 @@ class ChatCubit extends Cubit<ChatState> {
     required CounterCubit counterCubit,
     required ChatUser user,
     required ChatUser ai,
-  })  : _repository = repository,
-        _toolExecutor = toolExecutor,
-        _counterCubit = counterCubit,
-        _user = user,
-        _ai = ai,
-        super(ChatState.initial(aiUser: ai));
+  }) : _repository = repository,
+       _toolExecutor = toolExecutor,
+       _counterCubit = counterCubit,
+       _user = user,
+       _ai = ai,
+       super(ChatState.initial(aiUser: ai));
 
   /// Send a user message
   Future<void> sendMessage(String text) async {
@@ -39,11 +39,13 @@ class ChatCubit extends Cubit<ChatState> {
     );
 
     // Add user message to list
-    emit(state.copyWith(
-      messages: [userMessage, ...state.messages],
-      isProcessing: true,
-      clearError: true,
-    ));
+    emit(
+      state.copyWith(
+        messages: [userMessage, ...state.messages],
+        isProcessing: true,
+        clearError: true,
+      ),
+    );
 
     try {
       // Convert history
@@ -63,11 +65,7 @@ class ChatCubit extends Cubit<ChatState> {
       // Process response
       await _processResponse(response);
     } catch (e) {
-      emit(state.copyWith(
-        error: e.toString(),
-        isProcessing: false,
-        clearToolExecution: true,
-      ));
+      // Ensure processing is stopped and show error message
       _addErrorMessage('Error: ${e.toString()}');
     }
   }
@@ -87,52 +85,52 @@ class ChatCubit extends Cubit<ChatState> {
 
   /// Process the response from the server
   Future<void> _processResponse(ChatResponseData response) async {
-    String? accumulatedText;
-    List<ToolResultItem> toolResults = [];
+    try {
+      String? accumulatedText;
+      List<ToolResultItem> toolResults = [];
 
-    // Process each response item
-    for (final item in response.responses) {
-      if (item.type == 'text') {
-        // Accumulate text responses
-        accumulatedText = (accumulatedText ?? '') + (item.content ?? '');
-      } else if (item.type == 'tool_call') {
-        // Execute tool call
-        if (item.toolName != null) {
-          emit(state.copyWith(
-            currentToolExecution: 'Executing: ${item.toolName}',
-          ));
+      // Process each response item
+      for (final item in response.responses) {
+        if (item.type == 'text') {
+          // Accumulate text responses
+          accumulatedText = (accumulatedText ?? '') + (item.content ?? '');
+        } else if (item.type == 'tool_call') {
+          // Execute tool call
+          if (item.toolName != null) {
+            emit(
+              state.copyWith(
+                currentToolExecution: 'Executing: ${item.toolName}',
+              ),
+            );
 
-          // Small delay to show the execution message
-          await Future.delayed(const Duration(milliseconds: 300));
+            // Small delay to show the execution message
+            await Future.delayed(const Duration(milliseconds: 300));
 
-          final result = _toolExecutor.executeTool(
-            item.toolName!,
-            item.args,
-          );
+            final result = _toolExecutor.executeTool(item.toolName!, item.args);
 
-          // Store tool result for potential follow-up
-          String responseContent = result.message;
-          if (result.history != null && result.history!.isNotEmpty) {
-            responseContent += '\nHistory:\n- ${result.history!.join('\n- ')}';
-          } else if (result.history != null) {
-            responseContent += '\nHistory is empty.';
+            // Store tool result for potential follow-up
+            String responseContent = result.message;
+            if (result.history != null && result.history!.isNotEmpty) {
+              responseContent +=
+                  '\nHistory:\n- ${result.history!.join('\n- ')}';
+            } else if (result.history != null) {
+              responseContent += '\nHistory is empty.';
+            }
+
+            toolResults.add(
+              ToolResultItem(name: item.toolName!, response: responseContent),
+            );
           }
-
-          toolResults.add(
-            ToolResultItem(name: item.toolName!, response: responseContent),
-          );
         }
       }
-    }
 
-    // Add the accumulated response with typewriter effect
-    if (accumulatedText != null && accumulatedText.isNotEmpty) {
-      await _showMessageWithTypewriter(accumulatedText);
-    }
+      // Add the accumulated response with typewriter effect
+      if (accumulatedText != null && accumulatedText.isNotEmpty) {
+        await _showMessageWithTypewriter(accumulatedText);
+      }
 
-    // If we executed tools, send results back to server to complete the turn
-    if (toolResults.isNotEmpty) {
-      try {
+      // If we executed tools, send results back to server to complete the turn
+      if (toolResults.isNotEmpty) {
         final request = ChatRequestData(
           message: '', // Empty message for tool response
           currentCounterValue: _counterCubit.state.value,
@@ -141,35 +139,31 @@ class ChatCubit extends Cubit<ChatState> {
         );
 
         final followUpResponse = await _repository.sendMessage(request);
+        // Recursively process the follow-up response
         await _processResponse(followUpResponse);
-      } catch (e) {
-        emit(state.copyWith(
+      } else {
+        // No more tools to execute, finish processing
+        emit(state.copyWith(isProcessing: false, clearToolExecution: true));
+      }
+    } catch (e) {
+      // Ensure processing is stopped on any error
+      emit(
+        state.copyWith(
           error: e.toString(),
           isProcessing: false,
           clearToolExecution: true,
-        ));
-      }
-    } else {
-      // No more tools to execute, finish processing
-      emit(state.copyWith(
-        isProcessing: false,
-        clearToolExecution: true,
-      ));
+        ),
+      );
+      rethrow; // Re-throw to be caught by sendMessage
     }
   }
 
   /// Display message with typewriter effect
   Future<void> _showMessageWithTypewriter(String fullText) async {
     // Create an empty message
-    final message = ChatMessage(
-      user: _ai,
-      createdAt: DateTime.now(),
-      text: '',
-    );
+    final message = ChatMessage(user: _ai, createdAt: DateTime.now(), text: '');
 
-    emit(state.copyWith(
-      messages: [message, ...state.messages],
-    ));
+    emit(state.copyWith(messages: [message, ...state.messages]));
 
     // Typewriter effect: add characters gradually
     const charsPerBatch = 3;
@@ -203,11 +197,13 @@ class ChatCubit extends Cubit<ChatState> {
       text: '⚠️ $error',
     );
 
-    emit(state.copyWith(
-      messages: [errorMessage, ...state.messages],
-      isProcessing: false,
-      clearToolExecution: true,
-    ));
+    emit(
+      state.copyWith(
+        messages: [errorMessage, ...state.messages],
+        isProcessing: false,
+        clearToolExecution: true,
+      ),
+    );
   }
 
   @override
